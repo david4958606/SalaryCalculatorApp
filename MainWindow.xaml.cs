@@ -31,7 +31,7 @@ public partial class MainWindow : Window
         Title = $"工资计算器 - 版本 {version}";
         // 设置 ExcelPackage 的 LicenseContext
         ExcelPackage.License.SetNonCommercialPersonal("David Wang");
-
+        UpdateQuarterCheckEnabled();
         // 初始化当前月记录
         var d = DateTime.Today;
         _dailyRecords = SalaryCalculator.CreateMonthlyRecords(d.Year, d.Month);

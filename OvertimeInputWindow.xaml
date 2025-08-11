@@ -1,0 +1,56 @@
+﻿<Window x:Class="SalaryCalculatorApp.OvertimeInputWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="录入加班 / 项目奖" SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <StackPanel Margin="20" MinWidth="250">
+        <TextBlock Style="{StaticResource TitleBlockStyle}" Text="{Binding Date, StringFormat='{}{0:yyyy-MM-dd}'}" 
+                   FontSize="14" 
+                   HorizontalAlignment="Center" Margin="0,0,0,8"/>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Style="{StaticResource LabelBlockStyle}" Text="加班时长 (h):" VerticalAlignment="Center"/>
+            <TextBox Style="{StaticResource ModernTextBoxStyle}" x:Name="OvertimeBox" Width="80" Margin="10,0,0,0"
+                     Text="{Binding OvertimeHours, UpdateSourceTrigger=LostFocus}"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Style="{StaticResource LabelBlockStyle}" Text="项目奖时长 (h):" VerticalAlignment="Center"/>
+            <TextBox Style="{StaticResource ModernTextBoxStyle}" x:Name="ProjectBox" Width="80" Margin="10,0,0,0"
+                     Text="{Binding ProjectHours, UpdateSourceTrigger=LostFocus}"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Style="{StaticResource LabelBlockStyle}" Text="是否周末:" VerticalAlignment="Center"/>
+            <CheckBox Style="{StaticResource CheckBoxStyle}" x:Name="IsWeekendBox" Margin="10,0,0,0"
+                      IsChecked="{Binding IsWeekend, UpdateSourceTrigger=LostFocus}"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Style="{StaticResource LabelBlockStyle}" Text="是否节假日:" VerticalAlignment="Center"/>
+            <CheckBox Style="{StaticResource CheckBoxStyle}" x:Name="IsHolidayBox" Margin="10,0,0,0"
+                      IsChecked="{Binding IsHoliday, UpdateSourceTrigger=LostFocus}"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Style="{StaticResource LabelBlockStyle}" Text="是否工作日:" VerticalAlignment="Center"/>
+            <CheckBox Style="{StaticResource CheckBoxStyle}" x:Name="IsWorkdayBox" Margin="10,0,0,0"
+                      IsChecked="{Binding IsWorkday, UpdateSourceTrigger=LostFocus}"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button x:Name="OkButton" Style="{StaticResource ButtonStyle}" 
+                    Margin="0,0,10,0" 
+                    IsDefault="True" 
+                    Content="确定" 
+                    Width="70" 
+                    Click="Ok_Click"/>
+            <Button x:Name="CancelButton"
+                    Style="{StaticResource ButtonStyle}" 
+                    Content="取消"
+                    Width="70" 
+                    Margin="10,0,0,0" 
+                    Click="Cancel_Click"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

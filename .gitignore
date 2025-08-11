@@ -1,0 +1,84 @@
+# IDE / 编辑器配置
+.vs/
+.vscode/
+.cursor/
+.idea/
+.cursorrules
+
+# 构建输出
+bin/
+obj/
+[Bb]uild/
+[Bb]uilds/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+[Ww][Ii][Nn]32/
+
+# 用户配置文件
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# 临时文件
+*.tmp
+*.temp
+*.log
+*.tlog
+*.cache
+*.bak
+*.Backup
+*.swp
+*.pdb
+*.dbmdl
+
+# 生成的代码和资源
+*.g.cs
+*.g.i.cs
+*.Designer.cs
+*.Generated.*
+*.assemblyattributes.cs
+*.iobj
+*.ipdb
+*.idb
+
+# 发布目录
+publish/
+_PublishedWebsites/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+# 其他可能的临时目录
+TestResults/
+BenchmarkDotNet.Artifacts/
+nunit-*.xml
+coverage*.xml
+*.coverage
+*.coveragexml
+
+# Rider / ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+# Windows 文件系统垃圾
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+

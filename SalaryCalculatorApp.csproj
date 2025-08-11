@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <OutputType>WinExe</OutputType> 	  
+	  <TargetFramework>net8.0-windows</TargetFramework>
+	  <Nullable>enable</Nullable>
+	  <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	  <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <Authors>David Wang</Authors>
+    <Title></Title>
+    <FileVersion>4.2.1</FileVersion>
+    <AssemblyVersion>4.2.1</AssemblyVersion>
+    <StartupObject>SalaryCalculatorApp.App</StartupObject>
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
+    <SignAssembly>False</SignAssembly>
+    <Product>工资计算器</Product>
+    <AssemblyName>工资计算器v$(FileVersion)</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EPPlus" Version="8.0.8" />
+  </ItemGroup>
+
+</Project>

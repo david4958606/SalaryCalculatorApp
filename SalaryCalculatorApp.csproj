@@ -9,8 +9,8 @@
     <UseWPF>true</UseWPF>
     <Authors>David Wang</Authors>
     <Title></Title>
-    <FileVersion>4.2.1</FileVersion>
-    <AssemblyVersion>4.2.1</AssemblyVersion>
+    <AssemblyVersion>5.0.0</AssemblyVersion>
+    <FileVersion>5.0.0</FileVersion>
     <StartupObject>SalaryCalculatorApp.App</StartupObject>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <SignAssembly>False</SignAssembly>

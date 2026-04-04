@@ -72,7 +72,7 @@ namespace SalaryCalculatorApp
             }
 
             // 季度全勤：1、4、7、10 月发放
-            if (fullQuarter && (month.Month % 3 == 1))
+            if (fullQuarter && (month.Month % 3 == 0))
             {
                 res.GrossIncome += 1000;
                 res.Breakdown.Add(new DetailLine { Label = "季度全勤奖", Amount = 1000 });
@@ -162,10 +162,10 @@ namespace SalaryCalculatorApp
                 insuranceBase = baseSalary + perfSalary; // 默认社保基数为工资总额
             }
 
-            if (insuranceRate <= 0)
-            {
-                Utilities.ShowWarning("五险二金比例必须大于 0，请检查设置！");
-            }
+            // if (insuranceRate <= 0)
+            // {
+            //     Utilities.ShowWarning("五险二金比例必须大于 0，请检查设置！");
+            // }
 
             if (isProbation)
             {

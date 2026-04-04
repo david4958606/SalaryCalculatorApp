@@ -44,7 +44,7 @@
                                 <Border Background="#F5F5F5" CornerRadius="4" Padding="12,8" Margin="0,0,0,15">
                                     <StackPanel>
                                         <CheckBox x:Name="IsProbationCheck"
-                                                  Content="试用期（工资八折，无补贴，无全勤奖）"
+                                                  Content="试用期（工资八折，无补贴）"
                                                   Style="{StaticResource CheckBoxStyle}" />
 
                                         <CheckBox x:Name="FullMonthCheck"
@@ -221,7 +221,7 @@
                                 <TextBox  Grid.Row="3" Grid.Column="1" x:Name="HousingFundRateBox" Text="12%"/>
 
                                 <TextBlock Grid.Row="3" Grid.Column="2" Text="企业年金："/>
-                                <TextBox  Grid.Row="3" Grid.Column="3" x:Name="CorporatePensionRateBox" Text="0"/>
+                                <TextBox  Grid.Row="3" Grid.Column="3" x:Name="CorporatePensionRateBox" Text="0%"/>
                             </Grid>
 
                             <!-- 各项补贴设置 -->

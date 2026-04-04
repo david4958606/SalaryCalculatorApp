@@ -39,7 +39,7 @@ public partial class MainWindow : Window
 
     private void UpdateQuarterCheckEnabled()
     {
-        bool isQuarterMonth = WorkCalendar.DisplayDate.Month % 3 == 1; // 1、4、7、10
+        bool isQuarterMonth = WorkCalendar.DisplayDate.Month % 3 == 0; // 1、4、7、10
         FullQuarterCheck.IsEnabled = isQuarterMonth;
         if (!isQuarterMonth)
             FullQuarterCheck.IsChecked = false; // 禁用时顺带取消勾选，避免误选

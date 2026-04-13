@@ -1,4 +1,5 @@
 using SalaryCalculatorApp.Models;
+using System.Windows;
 
 namespace SalaryCalculatorApp.Services;
 
@@ -16,6 +17,12 @@ public class DialogService : IDialogService
         ArgumentNullException.ThrowIfNull(record);
 
         var dialog = _overtimeInputWindowFactory(record);
+        var mainWindow = Application.Current?.MainWindow;
+        if (mainWindow != null && !ReferenceEquals(mainWindow, dialog))
+        {
+            dialog.Owner = mainWindow;
+        }
+
         return dialog.ShowDialog();
     }
 }

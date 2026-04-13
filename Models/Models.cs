@@ -1,9 +1,6 @@
 ﻿// Models.cs
 // 放在 SalaryCalculatorApp 项目中的 Models 文件夹
 
-using System;
-using System.Collections.Generic;
-
 namespace SalaryCalculatorApp.Models;
 
 /// <summary>
@@ -47,6 +44,7 @@ public class SalaryResult
     public decimal NetIncome => GrossIncome - Deductions; // 实发
 
     public List<DetailLine> Breakdown { get; } = new(); // 供 DataGrid 绑定
+    public List<string> Warnings { get; } = new();
 
     public override string ToString()
     {

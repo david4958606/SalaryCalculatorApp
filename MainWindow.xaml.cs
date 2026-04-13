@@ -96,6 +96,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (!decimal.TryParse(ProjectBonusCoefficientBox.Text, out var projectBonusCoefficient) ||
+            projectBonusCoefficient <= 0)
+        {
+            Utilities.ShowWarning("请输入有效的项目奖系数！");
+            return;
+        }
+
         if (!decimal.TryParse(InsuranceBaseBox.Text, out var insuranceBase))
         {
             insuranceBase = baseSalary + perfSalary; // 默认社保基数为工资总额
@@ -133,6 +140,7 @@ public partial class MainWindow : Window
             fullQuarter,
             transportationSubsidy,
             otherSubsidy,
+            projectBonusCoefficient,
             insuranceBase,
             insuranceRate,
             insuranceAddon,

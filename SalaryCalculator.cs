@@ -30,6 +30,7 @@ namespace SalaryCalculatorApp
             bool fullQuarter,
             decimal transportationSubsidy,
             decimal otherSubsidy,
+            decimal projectBonusCoefficient,
             decimal insuranceBase,
             decimal insuranceRate,
             decimal insuranceAddon,
@@ -117,7 +118,7 @@ namespace SalaryCalculatorApp
                     }
 
                     var overtimeMultiplier = isHoliday ? 3.0m : (isWeekend ? 2.0m : 1.5m);
-                    var projectMultiplier = isHoliday ? 2.4m : (isWeekend ? 1.6m : 1.2m);
+                    var projectMultiplier = overtimeMultiplier * projectBonusCoefficient;
 
                     var overtimePay = rec.OvertimeHours * hourly * overtimeMultiplier;
                     var projectPay = rec.ProjectHours * hourly * projectMultiplier;

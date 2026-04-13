@@ -251,6 +251,7 @@
 
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
                                 <!-- 行 0 -->
@@ -259,6 +260,10 @@
 
                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="其他补贴："/>
                                 <TextBox  Grid.Row="0" Grid.Column="3" x:Name="OtherSubsidyBox" Text="0"/>
+
+                                <!-- 行 1 -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="项目奖系数："/>
+                                <TextBox  Grid.Row="1" Grid.Column="1" x:Name="ProjectBonusCoefficientBox" Text="0.7"/>
                             </Grid>
 
                             <Border Style="{StaticResource HeaderStyle}">

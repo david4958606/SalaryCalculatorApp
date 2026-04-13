@@ -92,19 +92,19 @@ namespace SalaryCalculatorApp
                     totalOvertimeHours += rec.OvertimeHours;
                     if (totalOvertimeHours > 36)
                     {
-                        Utilities.ShowWarning("加班时长超过 36 小时，请检查记录！");
+                        res.Warnings.Add("加班时长超过 36 小时，请检查记录！");
                         break;
                     }
 
                     if (rec.OvertimeHours < 0 || rec.ProjectHours < 0)
                     {
-                        Utilities.ShowWarning("加班或项目奖时长不能为负，请检查记录！");
+                        res.Warnings.Add("加班或项目奖时长不能为负，请检查记录！");
                         continue; // 跳过无效记录
                     }
 
                     if (rec.OvertimeHours > 24 || rec.ProjectHours > 24)
                     {
-                        Utilities.ShowWarning("单日加班或项目奖时长不能超过 24 小时，请检查记录！");
+                        res.Warnings.Add("单日加班或项目奖时长不能超过 24 小时，请检查记录！");
                         continue; // 跳过无效记录
                     }
 
@@ -159,7 +159,7 @@ namespace SalaryCalculatorApp
             //-------------------------
             if (insuranceBase <= 0)
             {
-                Utilities.ShowWarning("社保基数必须大于 0，请检查设置！");
+                res.Warnings.Add("社保基数必须大于 0，请检查设置！");
                 insuranceBase = baseSalary + perfSalary; // 默认社保基数为工资总额
             }
 

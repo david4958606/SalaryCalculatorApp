@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36310.24 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalaryCalculatorApp", "SalaryCalculatorApp.csproj", "{A6DCA97E-3611-4F19-80D3-72DDB694FD83}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalaryCalculatorApp.Tests", "SalaryCalculatorApp.Tests\SalaryCalculatorApp.Tests.csproj", "{2F17477D-A1B2-4B7D-98CF-0FE07A5D8D75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{A6DCA97E-3611-4F19-80D3-72DDB694FD83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6DCA97E-3611-4F19-80D3-72DDB694FD83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6DCA97E-3611-4F19-80D3-72DDB694FD83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F17477D-A1B2-4B7D-98CF-0FE07A5D8D75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F17477D-A1B2-4B7D-98CF-0FE07A5D8D75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F17477D-A1B2-4B7D-98CF-0FE07A5D8D75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F17477D-A1B2-4B7D-98CF-0FE07A5D8D75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

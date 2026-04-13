@@ -11,13 +11,13 @@
         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
             <TextBlock Style="{StaticResource LabelBlockStyle}" Text="加班时长 (h):" VerticalAlignment="Center"/>
             <TextBox Style="{StaticResource ModernTextBoxStyle}" x:Name="OvertimeBox" Width="80" Margin="10,0,0,0"
-                     Text="{Binding OvertimeHours, UpdateSourceTrigger=LostFocus}"/>
+                     Text="{Binding OvertimeHoursText, UpdateSourceTrigger=LostFocus}"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
             <TextBlock Style="{StaticResource LabelBlockStyle}" Text="项目奖时长 (h):" VerticalAlignment="Center"/>
             <TextBox Style="{StaticResource ModernTextBoxStyle}" x:Name="ProjectBox" Width="80" Margin="10,0,0,0"
-                     Text="{Binding ProjectHours, UpdateSourceTrigger=LostFocus}"/>
+                     Text="{Binding ProjectHoursText, UpdateSourceTrigger=LostFocus}"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
@@ -44,13 +44,14 @@
                     IsDefault="True" 
                     Content="确定" 
                     Width="70" 
-                    Click="Ok_Click"/>
+                    Command="{Binding OkCommand}"/>
             <Button x:Name="CancelButton"
-                    Style="{StaticResource ButtonStyle}" 
-                    Content="取消"
-                    Width="70" 
-                    Margin="10,0,0,0" 
-                    Click="Cancel_Click"/>
+                     Style="{StaticResource ButtonStyle}" 
+                     Content="取消"
+                     Width="70" 
+                     Margin="10,0,0,0" 
+                     IsCancel="True"
+                     Command="{Binding CancelCommand}"/>
         </StackPanel>
     </StackPanel>
 </Window>

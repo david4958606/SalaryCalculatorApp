@@ -255,6 +255,7 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
                                 <!-- 行 0 -->
@@ -267,6 +268,16 @@
                                 <!-- 行 1 -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="项目奖系数："/>
                                 <TextBox  Grid.Row="1" Grid.Column="1" Text="{Binding ProjectBonusCoefficientText, UpdateSourceTrigger=LostFocus}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="绩效奖励："/>
+                                <TextBox  Grid.Row="1" Grid.Column="3" Text="{Binding PerformanceRewardText, UpdateSourceTrigger=LostFocus}"/>
+
+                                <!-- 行 2 -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="税前加/扣款："/>
+                                <TextBox  Grid.Row="2" Grid.Column="1" Text="{Binding PreTaxAdjustmentText, UpdateSourceTrigger=LostFocus}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="税后加/扣款："/>
+                                <TextBox  Grid.Row="2" Grid.Column="3" Text="{Binding PostTaxAdjustmentText, UpdateSourceTrigger=LostFocus}"/>
                             </Grid>
 
                             <Border Style="{StaticResource HeaderStyle}">

@@ -37,7 +37,10 @@ namespace SalaryCalculatorApp
             decimal grandTotalPrePayTax,
             bool grandTotalEnabled,
             decimal otherWaiver,
-            List<DailyRecord> daily)
+            List<DailyRecord> daily,
+            decimal performanceReward = 0m,
+            decimal preTaxAdjustment = 0m,
+            decimal postTaxAdjustment = 0m)
         {
             var res = new SalaryResult();
 
@@ -153,6 +156,15 @@ namespace SalaryCalculatorApp
                 res.Breakdown.Add(new DetailLine { Label = "项目奖", Amount = totalProjectPay });
             }
 
+            //-------------------------
+            // 3.5 绩效奖励 & 税前加/扣款（计入税前总额，不受试用期影响）
+            //-------------------------
+            res.GrossIncome += performanceReward;
+            res.Breakdown.Add(new DetailLine { Label = "绩效奖励", Amount = performanceReward });
+
+            res.GrossIncome += preTaxAdjustment; // 负数则自动从税前总额中扣除
+            res.Breakdown.Add(new DetailLine { Label = "税前加/扣款", Amount = preTaxAdjustment });
+
             res.Breakdown.Add(new DetailLine { Label = "应发工资", Amount = res.GrossIncome });
             //-------------------------
             // 4. 扣除五险二金
@@ -229,6 +241,12 @@ namespace SalaryCalculatorApp
                     Amount = -tax
                 });
             }
+
+            //-------------------------
+            // 6. 税后加/扣款（直接计入税后实发工资，负数则自动扣除）
+            //-------------------------
+            res.Deductions -= postTaxAdjustment; // 减少扣款 = 增加实发；负数则增加扣款
+            res.Breakdown.Add(new DetailLine { Label = "税后加/扣款", Amount = postTaxAdjustment });
 
             //-------------------------
             // 返回结果

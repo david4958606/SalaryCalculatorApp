@@ -77,6 +77,15 @@ public partial class MainWindowViewModel : ObservableObject
     private string projectBonusCoefficientText = "0.7";
 
     [ObservableProperty]
+    private string performanceRewardText = "0";
+
+    [ObservableProperty]
+    private string preTaxAdjustmentText = "0";
+
+    [ObservableProperty]
+    private string postTaxAdjustmentText = "0";
+
+    [ObservableProperty]
     private string specialAdditionalReductionText = "0";
 
     [ObservableProperty]
@@ -236,7 +245,10 @@ public partial class MainWindowViewModel : ObservableObject
             Utilities.ParseDecimal(GrandTotalPrePayTaxText),
             GrandTotalEnabled,
             Utilities.ParseDecimal(SpecialAdditionalReductionText),
-            _dailyRecords);
+            _dailyRecords,
+            Utilities.ParseDecimal(PerformanceRewardText),
+            Utilities.ParseDecimal(PreTaxAdjustmentText),
+            Utilities.ParseDecimal(PostTaxAdjustmentText));
 
         foreach (var warning in result.Warnings)
         {

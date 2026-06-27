@@ -192,15 +192,17 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void RefreshResult()
     {
-        if (!decimal.TryParse(BaseSalaryText, out var baseSalary) ||
-            !decimal.TryParse(PerformanceSalaryText, out var perfSalary))
+        // 工资数值留空自动视为 0，仅在输入了无法解析的内容时报错
+        if (!Utilities.TryParseAllowEmpty(BaseSalaryText, out var baseSalary) ||
+            !Utilities.TryParseAllowEmpty(PerformanceSalaryText, out var perfSalary))
         {
             _messageService.ShowWarning("请输入有效的工资数值！");
             return;
         }
 
-        if (!decimal.TryParse(TransportationSubsidyText, out var transportationSubsidy) ||
-            !decimal.TryParse(OtherSubsidyText, out var otherSubsidy))
+        // 补贴留空自动视为 0，仅在输入了无法解析的内容时报错
+        if (!Utilities.TryParseAllowEmpty(TransportationSubsidyText, out var transportationSubsidy) ||
+            !Utilities.TryParseAllowEmpty(OtherSubsidyText, out var otherSubsidy))
         {
             _messageService.ShowWarning("请输入有效的补贴数值！");
             return;

@@ -72,7 +72,8 @@ public partial class OvertimeInputViewModel : ObservableObject
 
     private bool TryValidateHours(string input, string fieldName, out decimal value)
     {
-        if (!decimal.TryParse(input, out value))
+        // 留空自动视为 0，不报错
+        if (!Utilities.TryParseAllowEmpty(input, out value))
         {
             _messageService.ShowWarning($"请输入有效的{fieldName}！");
             return false;

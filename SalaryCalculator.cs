@@ -90,6 +90,8 @@ namespace SalaryCalculatorApp
                 decimal totalProjectPay = 0;
                 decimal totalOvertimePay = 0;
                 decimal totalOvertimeHours = 0;
+                decimal weekdayOvertimeHours = 0;     // 工作日加班时长
+                decimal restOvertimeHours = 0;        // 周末 + 节假日加班时长
                 foreach (var rec in daily.Where(r => r.OvertimeHours > 0 || r.ProjectHours > 0))
                 {
                     totalOvertimeHours += rec.OvertimeHours;
@@ -123,6 +125,14 @@ namespace SalaryCalculatorApp
                     var overtimeMultiplier = isHoliday ? 3.0m : (isWeekend ? 2.0m : 1.5m);
                     var projectMultiplier = overtimeMultiplier * projectBonusCoefficient;
 
+                    if (rec.OvertimeHours > 0)
+                    {
+                        if (isWeekend || isHoliday)
+                            restOvertimeHours += rec.OvertimeHours;
+                        else
+                            weekdayOvertimeHours += rec.OvertimeHours;
+                    }
+
                     var overtimePay = rec.OvertimeHours * hourly * overtimeMultiplier;
                     var projectPay = rec.ProjectHours * hourly * projectMultiplier;
 
@@ -154,6 +164,13 @@ namespace SalaryCalculatorApp
 
                 res.Breakdown.Add(new DetailLine { Label = "加班费", Amount = totalOvertimePay });
                 res.Breakdown.Add(new DetailLine { Label = "项目奖", Amount = totalProjectPay });
+
+                // 加班时长比例 = (周末 + 节假日加班时长) / 工作日加班时长，不能高于 1.5
+                if (restOvertimeHours > 0)
+                {
+                    var overtimeRatio = restOvertimeHours / weekdayOvertimeHours;
+                    res.Breakdown.Add(new DetailLine { Label = "加班时长比例", Amount = overtimeRatio });
+                }
             }
 
             //-------------------------

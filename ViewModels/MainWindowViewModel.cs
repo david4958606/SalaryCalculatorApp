@@ -169,9 +169,9 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         var filePath = await _fileDialogService.ShowSaveFileDialogAsync(
-            "Excel 文件 (*.xlsx)|*.xlsx",
+            "Excel 文件 (*.xlsx)|*.xlsx|Excel 备用扩展名 (*.xlsx1)|*.xlsx1",
             ".xlsx",
-            $"工资明细-{DisplayMonth:yyyy-MM}.xlsx");
+            $"工资明细-{DisplayMonth:yyyy-MM}");
 
         if (string.IsNullOrWhiteSpace(filePath))
         {
@@ -194,7 +194,7 @@ public partial class MainWindowViewModel : ObservableObject
     private async Task ImportOvertimeAsync()
     {
         var filePath = await _fileDialogService.ShowOpenFileDialogAsync(
-            "Excel 文件 (*.xlsx)|*.xlsx",
+            "Excel 文件 (*.xlsx;*.xlsx1)|*.xlsx;*.xlsx1|标准 Excel (*.xlsx)|*.xlsx|Excel 备用扩展名 (*.xlsx1)|*.xlsx1",
             ".xlsx");
         if (string.IsNullOrWhiteSpace(filePath))
         {
@@ -210,6 +210,9 @@ public partial class MainWindowViewModel : ObservableObject
                 var target = _dailyRecords.First(record => record.Date.Date == imported.Date.Date);
                 target.OvertimeHours = imported.OvertimeHours;
                 target.ProjectHours = imported.ProjectHours;
+                target.IsHoliday = imported.IsHoliday;
+                target.IsWorkday = imported.IsWorkday;
+                target.IsWeekend = imported.IsWeekend;
             }
 
             RefreshResult();

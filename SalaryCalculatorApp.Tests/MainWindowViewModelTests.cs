@@ -67,6 +67,8 @@ public class MainWindowViewModelTests
 
         Assert.True(File.Exists(fileDialogService.FilePath));
         Assert.NotNull(excelService.LastBreakdown);
+        Assert.Contains("*.xlsx1", fileDialogService.LastSaveFilter);
+        Assert.False(fileDialogService.LastSaveFileName?.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase));
         Assert.Contains("导出成功！", messageService.InfoMessages);
         File.Delete(fileDialogService.FilePath);
     }
@@ -82,7 +84,8 @@ public class MainWindowViewModelTests
                 {
                     Date = new DateTime(2025, 5, 2),
                     OvertimeHours = 3m,
-                    ProjectHours = 1m
+                    ProjectHours = 1m,
+                    IsHoliday = true
                 }
             ]
         };
@@ -97,8 +100,9 @@ public class MainWindowViewModelTests
 
         await viewModel.ImportOvertimeCommand.ExecuteAsync(null);
 
-        Assert.Contains(viewModel.DetailLines, item => item.Label.Contains("05-02 加班") && item.Label.Contains("3 小时"));
-        Assert.Contains(viewModel.DetailLines, item => item.Label.Contains("05-02 项目奖") && item.Label.Contains("1 小时"));
+        Assert.Contains(viewModel.DetailLines, item => item.Label == "05-02 加班(假日) 3 小时");
+        Assert.Contains(viewModel.DetailLines, item => item.Label == "05-02 项目奖(假日) 1 小时");
+        Assert.Contains("*.xlsx1", fileDialogService.LastOpenFilter);
         Assert.Contains("成功导入 1 天的加班记录！", messageService.InfoMessages);
         File.Delete(fileDialogService.FilePath);
     }
@@ -170,14 +174,20 @@ public class MainWindowViewModelTests
     private sealed class FakeFileDialogService : IFileDialogService
     {
         public string FilePath { get; } = Path.Combine(Path.GetTempPath(), $"salary-test-{Guid.NewGuid():N}.xlsx");
+        public string LastSaveFilter { get; private set; } = string.Empty;
+        public string? LastSaveFileName { get; private set; }
+        public string LastOpenFilter { get; private set; } = string.Empty;
 
         public Task<string?> ShowSaveFileDialogAsync(string filter, string defaultExt, string? fileName)
         {
+            LastSaveFilter = filter;
+            LastSaveFileName = fileName;
             return Task.FromResult<string?>(FilePath);
         }
 
         public Task<string?> ShowOpenFileDialogAsync(string filter, string defaultExt)
         {
+            LastOpenFilter = filter;
             return Task.FromResult<string?>(FilePath);
         }
     }

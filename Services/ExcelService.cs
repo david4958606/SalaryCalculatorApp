@@ -50,6 +50,7 @@ public class ExcelService : IExcelService
             recordsWorksheet.Cells[1, 1].Value = "日期";
             recordsWorksheet.Cells[1, 2].Value = "加班时长";
             recordsWorksheet.Cells[1, 3].Value = "项目奖时长";
+            recordsWorksheet.Cells[1, 4].Value = "日期类型";
 
             var exportedRecords = dailyRecords
                 .Where(record => record.OvertimeHours != 0 || record.ProjectHours != 0)
@@ -62,6 +63,7 @@ public class ExcelService : IExcelService
                 recordsWorksheet.Cells[i + 2, 1].Style.Numberformat.Format = "yyyy-mm-dd";
                 recordsWorksheet.Cells[i + 2, 2].Value = record.OvertimeHours;
                 recordsWorksheet.Cells[i + 2, 3].Value = record.ProjectHours;
+                recordsWorksheet.Cells[i + 2, 4].Value = GetDayType(record);
             }
 
             recordsWorksheet.Cells.AutoFitColumns();
@@ -84,6 +86,12 @@ public class ExcelService : IExcelService
         var records = recordsWorksheet is null
             ? ImportLegacyBreakdown(package, targetMonth)
             : ImportStructuredRecords(recordsWorksheet, targetMonth);
+
+        // 7.2.0 导出的结构化工作表尚无“日期类型”列，尝试从工资明细文字补回。
+        if (recordsWorksheet is not null && recordsWorksheet.Cells[1, 4].Text.Trim() != "日期类型")
+        {
+            ApplyLegacyDayTypes(package, targetMonth, records);
+        }
 
         return Task.FromResult<IReadOnlyList<DailyRecord>>(records);
     }
@@ -113,7 +121,13 @@ public class ExcelService : IExcelService
             }
 
             ValidateRecord(date, overtimeHours, projectHours, targetMonth, row);
-            records.Add(CreateRecord(date, overtimeHours, projectHours));
+            var record = CreateRecord(date, overtimeHours, projectHours);
+            if (worksheet.Cells[1, 4].Text.Trim() == "日期类型")
+            {
+                ApplyDayType(record, worksheet.Cells[row, 4].Text.Trim(), row);
+            }
+
+            records.Add(record);
         }
 
         return records;
@@ -127,9 +141,7 @@ public class ExcelService : IExcelService
             throw new InvalidDataException("Excel 文件中没有可导入的工作表。");
         }
 
-        var pattern = new Regex(
-            @"^(?<month>\d{1,2})-(?<day>\d{1,2})\s+(?<type>加班|项目奖)\([^)]*\)\s+(?<hours>\d+(?:\.\d+)?)\s*小时$",
-            RegexOptions.CultureInvariant);
+        var pattern = CreateLegacyPattern();
         var byDate = new Dictionary<DateTime, DailyRecord>();
         for (var row = 2; row <= worksheet.Dimension.End.Row; row++)
         {
@@ -152,6 +164,8 @@ public class ExcelService : IExcelService
                 byDate.Add(date, record);
             }
 
+            ApplyDayType(record, match.Groups["dayType"].Value, row);
+
             if (match.Groups["type"].Value == "加班")
                 record.OvertimeHours = hours;
             else
@@ -166,12 +180,97 @@ public class ExcelService : IExcelService
         return byDate.Values.OrderBy(record => record.Date).ToList();
     }
 
+    private static void ApplyLegacyDayTypes(
+        ExcelPackage package,
+        DateTime targetMonth,
+        IReadOnlyCollection<DailyRecord> records)
+    {
+        var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+        if (worksheet?.Dimension is null)
+        {
+            return;
+        }
+
+        var recordsByDate = records.ToDictionary(record => record.Date.Date);
+        var pattern = CreateLegacyPattern();
+        for (var row = 2; row <= worksheet.Dimension.End.Row; row++)
+        {
+            var match = pattern.Match(worksheet.Cells[row, 1].Text.Trim());
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var date = new DateTime(
+                targetMonth.Year,
+                int.Parse(match.Groups["month"].Value, CultureInfo.InvariantCulture),
+                int.Parse(match.Groups["day"].Value, CultureInfo.InvariantCulture));
+            if (recordsByDate.TryGetValue(date, out var record))
+            {
+                ApplyDayType(record, match.Groups["dayType"].Value, row);
+            }
+        }
+    }
+
+    private static Regex CreateLegacyPattern() => new(
+        @"^(?<month>\d{1,2})-(?<day>\d{1,2})\s+(?<type>加班|项目奖)\((?<dayType>假日|周末|工作日)\)\s+(?<hours>\d+(?:\.\d+)?)\s*小时$",
+        RegexOptions.CultureInvariant);
+
+    private static string GetDayType(DailyRecord record)
+    {
+        if (record.IsWorkday)
+            return "工作日";
+        if (record.IsHoliday)
+            return "假日";
+        return record.IsWeekend || record.Date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
+            ? "周末"
+            : "工作日";
+    }
+
+    private static void ApplyDayType(DailyRecord record, string dayType, int row)
+    {
+        record.IsHoliday = false;
+        record.IsWorkday = false;
+        record.IsWeekend = record.Date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+
+        switch (dayType)
+        {
+            case "假日":
+                record.IsHoliday = true;
+                break;
+            case "周末":
+                record.IsWeekend = true;
+                break;
+            case "工作日":
+                if (record.IsWeekend)
+                    record.IsWorkday = true;
+                break;
+            case "":
+                break;
+            default:
+                throw new InvalidDataException($"第 {row} 行日期类型“{dayType}”无效。");
+        }
+    }
+
     private static bool TryReadDate(ExcelRange cell, out DateTime value)
     {
         if (cell.Value is DateTime date)
         {
             value = date.Date;
             return true;
+        }
+
+        if (cell.Value is double serialDate)
+        {
+            try
+            {
+                value = DateTime.FromOADate(serialDate).Date;
+                return true;
+            }
+            catch (ArgumentException)
+            {
+                // 继续尝试按显示文本解析，以便给调用方统一返回格式错误。
+            }
         }
 
         return DateTime.TryParse(cell.Text, CultureInfo.CurrentCulture, DateTimeStyles.None, out value) ||

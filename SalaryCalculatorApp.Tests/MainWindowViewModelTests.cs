@@ -72,6 +72,38 @@ public class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task ImportOvertimeCommand_LoadsRecordsAndRefreshesResult()
+    {
+        var excelService = new FakeExcelService
+        {
+            ImportedRecords =
+            [
+                new DailyRecord
+                {
+                    Date = new DateTime(2025, 5, 2),
+                    OvertimeHours = 3m,
+                    ProjectHours = 1m
+                }
+            ]
+        };
+        var fileDialogService = new FakeFileDialogService();
+        await File.WriteAllBytesAsync(fileDialogService.FilePath, [1, 2, 3]);
+        var messageService = new FakeMessageService();
+        var viewModel = CreateViewModel(excelService, fileDialogService, messageService);
+        viewModel.DisplayMonth = new DateTime(2025, 5, 1);
+        viewModel.BaseSalaryText = "10000";
+        viewModel.PerformanceSalaryText = "2000";
+        viewModel.InsuranceBaseText = "12000";
+
+        await viewModel.ImportOvertimeCommand.ExecuteAsync(null);
+
+        Assert.Contains(viewModel.DetailLines, item => item.Label.Contains("05-02 加班") && item.Label.Contains("3 小时"));
+        Assert.Contains(viewModel.DetailLines, item => item.Label.Contains("05-02 项目奖") && item.Label.Contains("1 小时"));
+        Assert.Contains("成功导入 1 天的加班记录！", messageService.InfoMessages);
+        File.Delete(fileDialogService.FilePath);
+    }
+
+    [Fact]
     public void CalculateCommand_WhenCalculatorReturnsWarnings_ShowsThemThroughMessageService()
     {
         var messageService = new FakeMessageService();
@@ -118,11 +150,20 @@ public class MainWindowViewModelTests
     private sealed class FakeExcelService : IExcelService
     {
         public List<DetailLine>? LastBreakdown { get; private set; }
+        public IReadOnlyList<DailyRecord> ImportedRecords { get; init; } = [];
 
-        public Task<byte[]> ExportToExcelAsync(List<DetailLine> breakdown, string title)
+        public Task<byte[]> ExportToExcelAsync(
+            List<DetailLine> breakdown,
+            string title,
+            IReadOnlyCollection<DailyRecord>? dailyRecords = null)
         {
             LastBreakdown = breakdown;
             return Task.FromResult(new byte[] { 1, 2, 3 });
+        }
+
+        public Task<IReadOnlyList<DailyRecord>> ImportOvertimeAsync(byte[] workbookBytes, DateTime targetMonth)
+        {
+            return Task.FromResult(ImportedRecords);
         }
     }
 
@@ -131,6 +172,11 @@ public class MainWindowViewModelTests
         public string FilePath { get; } = Path.Combine(Path.GetTempPath(), $"salary-test-{Guid.NewGuid():N}.xlsx");
 
         public Task<string?> ShowSaveFileDialogAsync(string filter, string defaultExt, string? fileName)
+        {
+            return Task.FromResult<string?>(FilePath);
+        }
+
+        public Task<string?> ShowOpenFileDialogAsync(string filter, string defaultExt)
         {
             return Task.FromResult<string?>(FilePath);
         }

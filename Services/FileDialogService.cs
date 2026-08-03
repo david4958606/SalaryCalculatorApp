@@ -16,4 +16,18 @@ public class FileDialogService : IFileDialogService
         var result = dialog.ShowDialog() == true ? dialog.FileName : null;
         return Task.FromResult<string?>(result);
     }
+
+    public Task<string?> ShowOpenFileDialogAsync(string filter, string defaultExt)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = filter,
+            DefaultExt = defaultExt,
+            CheckFileExists = true,
+            Multiselect = false
+        };
+
+        var result = dialog.ShowDialog() == true ? dialog.FileName : null;
+        return Task.FromResult<string?>(result);
+    }
 }

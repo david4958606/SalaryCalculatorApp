@@ -1,11 +1,19 @@
 using OfficeOpenXml;
 using SalaryCalculatorApp.Models;
+using System.Globalization;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace SalaryCalculatorApp.Services;
 
 public class ExcelService : IExcelService
 {
-    public Task<byte[]> ExportToExcelAsync(List<DetailLine> breakdown, string title)
+    private const string OvertimeSheetName = "加班记录";
+
+    public Task<byte[]> ExportToExcelAsync(
+        List<DetailLine> breakdown,
+        string title,
+        IReadOnlyCollection<DailyRecord>? dailyRecords = null)
     {
         ArgumentNullException.ThrowIfNull(breakdown);
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
@@ -34,6 +42,167 @@ public class ExcelService : IExcelService
         }
 
         worksheet.Cells.AutoFitColumns();
+
+        if (dailyRecords is not null)
+        {
+            var recordsWorksheet = package.Workbook.Worksheets.Add(OvertimeSheetName);
+            recordsWorksheet.Cells.Style.Font.Name = "Microsoft YaHei";
+            recordsWorksheet.Cells[1, 1].Value = "日期";
+            recordsWorksheet.Cells[1, 2].Value = "加班时长";
+            recordsWorksheet.Cells[1, 3].Value = "项目奖时长";
+
+            var exportedRecords = dailyRecords
+                .Where(record => record.OvertimeHours != 0 || record.ProjectHours != 0)
+                .OrderBy(record => record.Date)
+                .ToList();
+            for (var i = 0; i < exportedRecords.Count; i++)
+            {
+                var record = exportedRecords[i];
+                recordsWorksheet.Cells[i + 2, 1].Value = record.Date;
+                recordsWorksheet.Cells[i + 2, 1].Style.Numberformat.Format = "yyyy-mm-dd";
+                recordsWorksheet.Cells[i + 2, 2].Value = record.OvertimeHours;
+                recordsWorksheet.Cells[i + 2, 3].Value = record.ProjectHours;
+            }
+
+            recordsWorksheet.Cells.AutoFitColumns();
+        }
+
         return Task.FromResult(package.GetAsByteArray());
     }
+
+    public Task<IReadOnlyList<DailyRecord>> ImportOvertimeAsync(byte[] workbookBytes, DateTime targetMonth)
+    {
+        ArgumentNullException.ThrowIfNull(workbookBytes);
+        if (workbookBytes.Length == 0)
+        {
+            throw new InvalidDataException("Excel 文件内容为空。");
+        }
+
+        using var stream = new MemoryStream(workbookBytes);
+        using var package = new ExcelPackage(stream);
+        var recordsWorksheet = package.Workbook.Worksheets[OvertimeSheetName];
+        var records = recordsWorksheet is null
+            ? ImportLegacyBreakdown(package, targetMonth)
+            : ImportStructuredRecords(recordsWorksheet, targetMonth);
+
+        return Task.FromResult<IReadOnlyList<DailyRecord>>(records);
+    }
+
+    private static List<DailyRecord> ImportStructuredRecords(ExcelWorksheet worksheet, DateTime targetMonth)
+    {
+        if (worksheet.Dimension is null ||
+            worksheet.Cells[1, 1].Text.Trim() != "日期" ||
+            worksheet.Cells[1, 2].Text.Trim() != "加班时长")
+        {
+            throw new InvalidDataException("“加班记录”工作表格式不正确。");
+        }
+
+        var records = new List<DailyRecord>();
+        for (var row = 2; row <= worksheet.Dimension.End.Row; row++)
+        {
+            if (string.IsNullOrWhiteSpace(worksheet.Cells[row, 1].Text))
+            {
+                continue;
+            }
+
+            if (!TryReadDate(worksheet.Cells[row, 1], out var date) ||
+                !TryReadDecimal(worksheet.Cells[row, 2], out var overtimeHours) ||
+                !TryReadDecimal(worksheet.Cells[row, 3], out var projectHours))
+            {
+                throw new InvalidDataException($"“加班记录”第 {row} 行包含无效数据。");
+            }
+
+            ValidateRecord(date, overtimeHours, projectHours, targetMonth, row);
+            records.Add(CreateRecord(date, overtimeHours, projectHours));
+        }
+
+        return records;
+    }
+
+    private static List<DailyRecord> ImportLegacyBreakdown(ExcelPackage package, DateTime targetMonth)
+    {
+        var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+        if (worksheet?.Dimension is null)
+        {
+            throw new InvalidDataException("Excel 文件中没有可导入的工作表。");
+        }
+
+        var pattern = new Regex(
+            @"^(?<month>\d{1,2})-(?<day>\d{1,2})\s+(?<type>加班|项目奖)\([^)]*\)\s+(?<hours>\d+(?:\.\d+)?)\s*小时$",
+            RegexOptions.CultureInvariant);
+        var byDate = new Dictionary<DateTime, DailyRecord>();
+        for (var row = 2; row <= worksheet.Dimension.End.Row; row++)
+        {
+            var match = pattern.Match(worksheet.Cells[row, 1].Text.Trim());
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var date = new DateTime(
+                targetMonth.Year,
+                int.Parse(match.Groups["month"].Value, CultureInfo.InvariantCulture),
+                int.Parse(match.Groups["day"].Value, CultureInfo.InvariantCulture));
+            var hours = decimal.Parse(match.Groups["hours"].Value, CultureInfo.InvariantCulture);
+            ValidateRecord(date, hours, 0, targetMonth, row);
+
+            if (!byDate.TryGetValue(date, out var record))
+            {
+                record = CreateRecord(date, 0, 0);
+                byDate.Add(date, record);
+            }
+
+            if (match.Groups["type"].Value == "加班")
+                record.OvertimeHours = hours;
+            else
+                record.ProjectHours = hours;
+        }
+
+        if (byDate.Count == 0)
+        {
+            throw new InvalidDataException("未找到可导入的加班记录。请使用本应用导出的 Excel 文件。");
+        }
+
+        return byDate.Values.OrderBy(record => record.Date).ToList();
+    }
+
+    private static bool TryReadDate(ExcelRange cell, out DateTime value)
+    {
+        if (cell.Value is DateTime date)
+        {
+            value = date.Date;
+            return true;
+        }
+
+        return DateTime.TryParse(cell.Text, CultureInfo.CurrentCulture, DateTimeStyles.None, out value) ||
+               DateTime.TryParseExact(cell.Text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
+    }
+
+    private static bool TryReadDecimal(ExcelRange cell, out decimal value)
+    {
+        if (string.IsNullOrWhiteSpace(cell.Text))
+        {
+            value = 0;
+            return true;
+        }
+
+        return decimal.TryParse(cell.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out value) ||
+               decimal.TryParse(cell.Text, NumberStyles.Number, CultureInfo.InvariantCulture, out value);
+    }
+
+    private static void ValidateRecord(DateTime date, decimal overtimeHours, decimal projectHours, DateTime targetMonth, int row)
+    {
+        if (date.Year != targetMonth.Year || date.Month != targetMonth.Month)
+            throw new InvalidDataException($"第 {row} 行日期 {date:yyyy-MM-dd} 不属于当前月份 {targetMonth:yyyy-MM}。");
+        if (overtimeHours < 0 || projectHours < 0 || overtimeHours > 24 || projectHours > 24)
+            throw new InvalidDataException($"第 {row} 行时长必须在 0 到 24 小时之间。");
+    }
+
+    private static DailyRecord CreateRecord(DateTime date, decimal overtimeHours, decimal projectHours) => new()
+    {
+        Date = date.Date,
+        OvertimeHours = overtimeHours,
+        ProjectHours = projectHours,
+        IsWeekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
+    };
 }

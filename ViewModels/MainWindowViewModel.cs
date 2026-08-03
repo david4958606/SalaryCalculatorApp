@@ -180,13 +180,44 @@ public partial class MainWindowViewModel : ObservableObject
 
         try
         {
-            var bytes = await _excelService.ExportToExcelAsync(DetailLines.ToList(), "工资明细");
+            var bytes = await _excelService.ExportToExcelAsync(DetailLines.ToList(), "工资明细", _dailyRecords);
             await File.WriteAllBytesAsync(filePath, bytes);
             _messageService.ShowInfo("导出成功！");
         }
         catch (Exception ex)
         {
             _messageService.ShowError($"导出失败：{ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task ImportOvertimeAsync()
+    {
+        var filePath = await _fileDialogService.ShowOpenFileDialogAsync(
+            "Excel 文件 (*.xlsx)|*.xlsx",
+            ".xlsx");
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            return;
+        }
+
+        try
+        {
+            var bytes = await File.ReadAllBytesAsync(filePath);
+            var importedRecords = await _excelService.ImportOvertimeAsync(bytes, DisplayMonth);
+            foreach (var imported in importedRecords)
+            {
+                var target = _dailyRecords.First(record => record.Date.Date == imported.Date.Date);
+                target.OvertimeHours = imported.OvertimeHours;
+                target.ProjectHours = imported.ProjectHours;
+            }
+
+            RefreshResult();
+            _messageService.ShowInfo($"成功导入 {importedRecords.Count} 天的加班记录！");
+        }
+        catch (Exception ex)
+        {
+            _messageService.ShowError($"导入失败：{ex.Message}");
         }
     }
 

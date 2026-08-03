@@ -166,7 +166,7 @@ namespace SalaryCalculatorApp
                 res.Breakdown.Add(new DetailLine { Label = "项目奖", Amount = totalProjectPay });
 
                 // 加班时长比例 = (周末 + 节假日加班时长) / 工作日加班时长，不能高于 1.5
-                if (restOvertimeHours > 0)
+                if (restOvertimeHours > 0 && weekdayOvertimeHours > 0)
                 {
                     var overtimeRatio = restOvertimeHours / weekdayOvertimeHours;
                     res.Breakdown.Add(new DetailLine { Label = "加班时长比例", Amount = overtimeRatio });
